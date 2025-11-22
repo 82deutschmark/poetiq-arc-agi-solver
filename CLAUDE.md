@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 ## ✍️ Coding Standards
 
-Ideally, every TypeScript file should start with a basic header like this:
+Ideally, every file should start with a basic header like this:
 
  * Author: {Your Model Name}
  * Date: {timestamp}  

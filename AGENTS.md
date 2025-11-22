@@ -1,7 +1,7 @@
 # Repository Guidelines
 ## ✍️ Coding Standards
 
-Ideally, every TypeScript file should start with a basic header like this:
+Ideally, every file should start with a basic header like this:
 
  * Author: {Your Model Name}
  * Date: {timestamp}  
