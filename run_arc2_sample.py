@@ -1,3 +1,14 @@
+"""ARC-2 training runner using the default Poetiq/Gemini solver.
+
+Author: Cascade
+Date: 2025-11-22
+PURPOSE: Run a small subset of ARC-2 training problems using the existing
+Poetiq/ARC solver stack and default Gemini-based configuration. Reads ARC-2
+training JSONs, invokes `solve`, scores predictions with `score_task`, and
+writes Kaggle-style predictions via `build_kaggle_two_attempts` into the
+`output/arc2_gemini` directory.
+"""
+
 import asyncio
 import json
 import os
@@ -27,13 +38,12 @@ DATA_SOLUTIONS_2025 = os.path.join(
 
 TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 OUTPUT_DIR = os.path.join(HERE, "output", "arc2_gemini")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 PREDICTIONS_PATH = os.path.join(OUTPUT_DIR, f"submission_{TIMESTAMP}.json")
 LOG_PATH = os.path.join(OUTPUT_DIR, f"log_{TIMESTAMP}.txt")
 
 # The specific ARC-2 training task IDs to run
-SELECTED_PROBLEMS = [
+SELECTED_PROBLEMS: list[str] = [
     "dc2e9a9d",
     "8b28cd80",
     "7d419a02",
@@ -44,6 +54,15 @@ SELECTED_PROBLEMS = [
 
 async def run() -> None:
     load_dotenv()
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    gemini_key = os.getenv('GEMINI_API_KEY')
+    if not gemini_key:
+        print(
+            'ERROR: GEMINI_API_KEY is not set. '
+            'Please configure it in your environment or .env before running this script.'
+        )
+        return
 
     with open(DATA_CHALLENGES_2025, "r", encoding="utf-8") as f:
         challenges_blob: dict[str, dict] = json.load(f)
@@ -66,7 +85,17 @@ async def run() -> None:
 
         print(f"\n=== {task_id} ===")
         start = time.time()
-        results = await solve(train_in, train_out, test_in, problem_id=task_id)
+        try:
+            results = await solve(train_in, train_out, test_in, problem_id=task_id)
+        except asyncio.CancelledError as exc:
+            print(
+                f'{task_id}: LLM request was cancelled '
+                f'(network timeout, cancellation, or interrupt): {exc}'
+            )
+            return
+        except Exception as exc:
+            print(f'{task_id}: ERROR while calling Gemini model: {exc}')
+            return
         elapsed = time.time() - start
 
         preds = build_kaggle_two_attempts(results, test_in)

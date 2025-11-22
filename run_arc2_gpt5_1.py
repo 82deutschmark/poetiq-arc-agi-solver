@@ -1,3 +1,15 @@
+"""ARC-2 training runner using a GPT-5.1-style coding solver.
+
+Author: Cascade
+Date: 2025-11-22
+PURPOSE: Run a small subset of ARC-2 training problems using the existing
+Poetiq/ARC solver stack, but swapping the expert LLM to an OpenAI GPT-5.1
+compatible model via LiteLLM. Reads ARC-2 training JSONs, invokes
+`solve_parallel_coding` with adapted expert configs from `arc_agi.config`,
+logs per-task scores with `score_task`, and writes Kaggle-style predictions via
+`build_kaggle_two_attempts` into the `output/arc2_gpt5_1` directory.
+"""
+
 import asyncio
 import json
 import os
@@ -11,7 +23,6 @@ from arc_agi.io import build_kaggle_two_attempts
 from arc_agi.scoring import score_task
 from arc_agi.solve_parallel_coding import solve_parallel_coding
 from arc_agi.types import ExpertConfig
-
 
 HERE = os.path.dirname(__file__)
 DATA_CHALLENGES_2025 = os.path.join(
@@ -29,13 +40,12 @@ DATA_SOLUTIONS_2025 = os.path.join(
 
 TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 OUTPUT_DIR = os.path.join(HERE, "output", "arc2_gpt5_1")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 PREDICTIONS_PATH = os.path.join(OUTPUT_DIR, f"submission_{TIMESTAMP}.json")
 LOG_PATH = os.path.join(OUTPUT_DIR, f"log_{TIMESTAMP}.txt")
 
 # The specific ARC-2 training task IDs to run
-SELECTED_PROBLEMS = [
+SELECTED_PROBLEMS: list[str] = [
     "dc2e9a9d",
     "8b28cd80",
     "7d419a02",
@@ -55,6 +65,15 @@ def build_expert_configs() -> list[ExpertConfig]:
 
 async def run() -> None:
     load_dotenv()
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    openai_key = os.getenv('OPENAI_API_KEY')
+    if not openai_key:
+        print(
+            'ERROR: OPENAI_API_KEY is not set. '
+            'Please configure it in your environment or .env before running this script.'
+        )
+        return
 
     with open(DATA_CHALLENGES_2025, "r", encoding="utf-8") as f:
         challenges_blob: dict[str, dict] = json.load(f)
@@ -79,14 +98,24 @@ async def run() -> None:
         print(f"\n=== {task_id} (GPT-5.1) ===")
         start = time.time()
 
-        expert_configs = build_expert_configs()
-        results = await solve_parallel_coding(
-            train_in=train_in,
-            train_out=train_out,
-            test_in=test_in,
-            expert_configs=expert_configs,
-            problem_id=task_id,
-        )
+        try:
+            expert_configs = build_expert_configs()
+            results = await solve_parallel_coding(
+                train_in=train_in,
+                train_out=train_out,
+                test_in=test_in,
+                expert_configs=expert_configs,
+                problem_id=task_id,
+            )
+        except asyncio.CancelledError as exc:
+            print(
+                f'{task_id}: LLM request was cancelled '
+                f'(network timeout, cancellation, or interrupt): {exc}'
+            )
+            return
+        except Exception as exc:
+            print(f'{task_id}: ERROR while calling GPT-5.1 model: {exc}')
+            return
 
         elapsed = time.time() - start
 
