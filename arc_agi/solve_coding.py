@@ -79,11 +79,20 @@ async def solve_coding(
                 retries=per_iteration_retries,
             )
         except Exception as e:
-            if "Exceeded timeouts allotted to the request" in str(e) or "Exceeded time allotted to the request" in str(e):
-                # Exceeded max_remaining_timeouts or max_remaining_time
-                print("Exiting early due to exceeding allotted time or timeouts on problem", problem_id)
+            msg = str(e)
+            if (
+                "Exceeded timeouts allotted to the request" in msg
+                or "Exceeded time allotted to the request" in msg
+                or "Quota exhausted for model" in msg
+                or "RESOURCE_EXHAUSTED" in msg
+            ):
+                # Exceeded max_remaining_timeouts, max_remaining_time, or hit hard quota.
+                print(
+                    "Exiting early due to exceeding allotted time, timeouts, or quota on problem",
+                    problem_id,
+                )
                 break
-            # Just exceeded per_iteration_retries, so try the next iteration
+            # Just exceeded per_iteration_retries or hit a recoverable error, so try the next iteration
             continue
 
         code = _parse_code_from_llm(response)
