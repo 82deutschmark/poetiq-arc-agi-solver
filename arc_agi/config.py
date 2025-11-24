@@ -16,9 +16,9 @@ CONFIG_LIST: list[ExpertConfig] = [
     # LLM parameters
     'llm_id': 'gemini/gemini-3-pro-preview',
     'solver_temperature': 1.0,
-    'request_timeout': 20 * 60, # in seconds
-    'max_total_timeouts': 3, # per problem per solver
-    'max_total_time': 30 * 60, # per problem per solver
+    'request_timeout': 30 * 60, # in seconds
+    'max_total_timeouts': 6, # per problem per solver
+    'max_total_time': 2 * 60 * 60, # per problem per solver
     'per_iteration_retries': 1,
     # Solver parameters
     'num_experts': 1,

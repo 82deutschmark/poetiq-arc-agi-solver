@@ -10,7 +10,7 @@ Ideally, every file should start with a basic header like this:
  * PURPOSE: Verbose details about functionality, integration points, dependencies
 ## Project Overview
 
-This repository reproduces Poetiq's record-breaking ARC-AGI solver using iterative LLM-based code generation. The system solves abstract reasoning tasks by having LLMs write Python transformation functions, execute them in sandboxes, score the results, and refine solutions through feedback loops.
+This repository reproduces Poetiq's allegedly high performance ARC-AGI solver using iterative LLM-based code generation. The system solves abstract reasoning tasks by having LLMs write Python transformation functions, execute them in sandboxes, score the results, and refine solutions through feedback loops.
 
 ## Development Commands
 

@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-import resource
+import sys
 import time
 import traceback
 from datetime import datetime
@@ -14,6 +14,10 @@ from arc_agi.io import build_kaggle_two_attempts
 from arc_agi.scoring import score_task
 from arc_agi.solve import solve
 
+# Import resource only on Unix systems
+if sys.platform != 'win32':
+    import resource
+
 load_dotenv()
 
 
@@ -21,9 +25,9 @@ load_dotenv()
 TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 # challenge input file
-DATA_CHALLENGES = os.path.join(os.path.dirname(__file__), "data", "arc-prize-2024", "arc-agi_evaluation_challenges.json")
+DATA_CHALLENGES = os.path.join(os.path.dirname(__file__), "data", "arc-prize-2025", "arc-agi_evaluation_challenges.json")
 # optional challenge solution file
-DATA_SOLUTIONS = os.path.join(os.path.dirname(__file__), "data", "arc-prize-2024", "arc-agi_evaluation_solutions.json")
+DATA_SOLUTIONS = os.path.join(os.path.dirname(__file__), "data", "arc-prize-2025", "arc-agi_evaluation_solutions.json")
 # where to write outputs
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")
 OUTPUT = os.path.join(OUTPUT_DIR, f"submission_{TIMESTAMP}.json")
@@ -31,7 +35,7 @@ OUTPUT = os.path.join(OUTPUT_DIR, f"submission_{TIMESTAMP}.json")
 # number of problems (None = all)
 NUM_PROBLEMS = None
 # select particular problems
-SELECTED_PROBLEMS = [] # e.g. ['b7999b51']
+SELECTED_PROBLEMS = ['28a6681f', '2b83f449', '4e34c42c', 'b9e38dc0']
 
 
 async def _eval_task_data(task_id: str, task: dict) -> tuple[str, Optional[list[dict]], Optional[str], float]:
@@ -55,12 +59,13 @@ async def _eval_task_data(task_id: str, task: dict) -> tuple[str, Optional[list[
 
 
 async def main():
-    # Ensure we don't run out of file handles
-    # Get current soft and hard limits
-    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-    # Set a new soft limit (cannot exceed hard limit)
-    new_soft = 65536
-    resource.setrlimit(resource.RLIMIT_NOFILE, (new_soft, hard))
+    # Ensure we don't run out of file handles (Unix only)
+    if sys.platform != 'win32':
+        # Get current soft and hard limits
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        # Set a new soft limit (cannot exceed hard limit)
+        new_soft = 65536
+        resource.setrlimit(resource.RLIMIT_NOFILE, (new_soft, hard))
 
     os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
 
@@ -121,7 +126,7 @@ async def main():
                 total += 1
                 correct += task_score
                 incorrect += 1 - task_score
-                mark = "✓" if task_score == 1.0 else "✗"
+                mark = "[PASS]" if task_score == 1.0 else "[FAIL]"
                 print(f"{mark} {task_id} ({round(elapsed)}s) [{correct}/{total}]")
             else:
                 print(f"· {task_id} ({round(elapsed)}s)")
