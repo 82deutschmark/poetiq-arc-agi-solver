@@ -1,5 +1,5 @@
 /**
- * Author: Cascade (Claude Sonnet 4)
+ * Author: Cascade (Claude Opus 4.5)
  * Date: 2025-11-25T16:52:00-05:00
  * PURPOSE: Comprehensive status report of all 120 ARC Prize 2025 puzzles.
  *          Documents which puzzles have been tested, their results, and
