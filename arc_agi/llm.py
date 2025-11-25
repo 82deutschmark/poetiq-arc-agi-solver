@@ -87,18 +87,9 @@ async def llm(
             litellm.RouterRateLimitError,
             litellm.RouterRateLimitErrorBasic,
         ) as e:
-            msg = str(e)
-            if "RESOURCE_EXHAUSTED" in msg or "check quota" in msg:
-                print(f"{problem_id or ''} Quota exhausted or resource exhausted for {model}: {msg}")
-                raise RuntimeError("Quota exhausted for model")
-            # None of these exceptions should prevent the problem from being solved in normal cases,
-            # but they should still count against the allotted retries to avoid infinite loops.
-            print(f"{problem_id or ''} Ignoring {type(e).__name__} and retrying attempt {attempt}/{retries}: {msg}")
-            if attempt == retries:
-                print(f"{problem_id or ''} Max retry limit reached while handling {type(e).__name__}.")
-                raise e
+            # None of these exceptions should prevent the problem from being solved, so don't let them count against the allotted retries.
+            print(f"{problem_id or ''} Ignoring {type(e).__name__} and retrying attempt {attempt}: {e}")
             await asyncio.sleep(RETRY_DELAY_SEC)
-            attempt += 1
             continue
 
         except Exception as e:
@@ -110,7 +101,9 @@ async def llm(
             if "Timeout" in str(e):
                 if max_remaining_timeouts is not None:
                     max_remaining_timeouts -= 1
-                print(f"{problem_id or ''} Timed out. Remaining timeouts: {max_remaining_timeouts}")
+                    print(
+                        f"{problem_id or ''} Timed out. Remaining timeouts: {max_remaining_timeouts}"
+                    )
                 if max_remaining_timeouts is not None and max_remaining_timeouts <= 0:
                     raise RuntimeError("Exceeded timeouts allotted to the request")
 
@@ -129,8 +122,11 @@ async def llm(
                 print(str(e))
                 raise e
 
+            print(str(e))
             print(f"Exception during request for problem: {problem_id or ''}. Retry number {attempt}.")
             await asyncio.sleep(RETRY_DELAY_SEC)
+
+            # Increment attempt at the end of the loop.
             attempt += 1
 
     raise RuntimeError("Retries exceeded")
