@@ -11,7 +11,8 @@ async def run(
     """Run user code in a subprocess asynchronously, returning (ok, result or error)."""
     script = _build_script(code)
 
-    with tempfile.TemporaryDirectory() as td:
+    # ignore_cleanup_errors=True prevents Windows PermissionError when subprocess still holds file handles
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
         path = os.path.join(td, "u.py")
         with open(path, "w", encoding="utf-8") as f:
             f.write(textwrap.dedent(script))
