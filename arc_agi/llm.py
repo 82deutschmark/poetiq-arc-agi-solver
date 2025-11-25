@@ -15,6 +15,7 @@ RETRIES = 3
 RETRY_DELAY_SEC = 5
 
 limiters: dict[Models, Limiter] = {
+    # Direct API models
     "groq/openai/gpt-oss-120b": Limiter(1.0),
     "openai/gpt-5": Limiter(1.0),
     "openai/gpt-5.1": Limiter(1.0),
@@ -24,9 +25,15 @@ limiters: dict[Models, Limiter] = {
     "anthropic/claude-haiku-4-5": Limiter(1.0),
     "gemini/gemini-2.5-pro": Limiter(2.0),
     "gemini/gemini-3-pro-preview": Limiter(1.0),
+    # OpenRouter models - more generous limits since paid API
+    "openrouter/google/gemini-3-pro-preview": Limiter(2.0),
+    "openrouter/google/gemini-2.5-flash-preview-09-2025": Limiter(3.0),
+    "openrouter/anthropic/claude-sonnet-4": Limiter(2.0),
+    "openrouter/openai/gpt-5.1": Limiter(2.0),
 }
 
 props: dict[Models, dict] = {
+    # Direct API models
     "groq/openai/gpt-oss-120b": {},
     "openai/gpt-5": {"reasoning_effort": "high"},
     "openai/gpt-5.1": {"reasoning_effort": "high"},
@@ -36,6 +43,11 @@ props: dict[Models, dict] = {
     "anthropic/claude-haiku-4-5": {"thinking": {"type": "enabled", "budget_tokens": 32_000}},
     "gemini/gemini-2.5-pro": {"thinking": {"type": "enabled", "budget_tokens": 16_000}},
     "gemini/gemini-3-pro-preview": {},
+    # OpenRouter models
+    "openrouter/google/gemini-3-pro-preview": {},
+    "openrouter/google/gemini-2.5-flash-preview-09-2025": {},
+    "openrouter/anthropic/claude-sonnet-4": {"thinking": {"type": "enabled", "budget_tokens": 32_000}},
+    "openrouter/openai/gpt-5.1": {"reasoning_effort": "high"},
 }
 
 

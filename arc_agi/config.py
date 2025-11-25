@@ -1,5 +1,6 @@
 from arc_agi.prompts import FEEDBACK_PROMPT, SOLVER_PROMPT_1, SOLVER_PROMPT_2, SOLVER_PROMPT_3
 from arc_agi.types import ExpertConfig
+import os
 
 # To run Poetiq(Gemini-3-a):
 NUM_EXPERTS = 1
@@ -8,13 +9,24 @@ NUM_EXPERTS = 1
 # To run Poetiq(Gemini-3-c):
 # NUM_EXPERTS = 8
 
+# Model selection - use OpenRouter to avoid Gemini direct API rate limits
+# Set USE_OPENROUTER=true in .env to route through OpenRouter
+USE_OPENROUTER = os.getenv('USE_OPENROUTER', 'false').lower() == 'true'
+
+# Model IDs
+GEMINI_DIRECT = 'gemini/gemini-3-pro-preview'
+GEMINI_OPENROUTER = 'openrouter/google/gemini-3-pro-preview'
+
+# Select model based on environment
+DEFAULT_MODEL = GEMINI_OPENROUTER if USE_OPENROUTER else GEMINI_DIRECT
+
 CONFIG_LIST: list[ExpertConfig] = [
   {
     # Prompts
     'solver_prompt': SOLVER_PROMPT_1,
     'feedback_prompt': FEEDBACK_PROMPT,
     # LLM parameters
-    'llm_id': 'gemini/gemini-3-pro-preview',
+    'llm_id': DEFAULT_MODEL,
     'solver_temperature': 1.0,
     'request_timeout': 60 * 60, # in seconds
     'max_total_timeouts': 15, # per problem per solver

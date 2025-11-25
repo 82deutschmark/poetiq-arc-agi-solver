@@ -1,6 +1,7 @@
 from typing import Literal, Optional, TypedDict
 
 Models = Literal[
+    # Direct API models
     "groq/openai/gpt-oss-120b",
     "openai/gpt-5",
     "openai/gpt-5.1",
@@ -10,6 +11,11 @@ Models = Literal[
     "anthropic/claude-haiku-4-5",
     "gemini/gemini-2.5-pro",
     "gemini/gemini-3-pro-preview",
+    # OpenRouter models (use OPENROUTER_API_KEY)
+    "openrouter/google/gemini-3-pro-preview",
+    "openrouter/google/gemini-2.5-flash-preview-09-2025",
+    "openrouter/anthropic/claude-sonnet-4",
+    "openrouter/openai/gpt-5.1",
 ]
 
 
