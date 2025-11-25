@@ -6,8 +6,17 @@
  * SRP and DRY check: Pass - Standalone documentation file.
  */
 
-# Test Run Extrapolation Analysis
-## Gemini 3 Pro Preview on ARC Prize 2025
+# Gemini 3 Pro Preview – 10-Puzzle Test Run
+## ARC Prize 2025 Evaluation Set
+
+---
+
+## Key Finding: Gemini 500 Internal Server Errors
+
+- During this 10-puzzle run, the Gemini 3 Pro Preview API returned **multiple 500 Internal Server Errors**.
+- Puzzle `13e47133` in particular triggered repeated 500s and exhausted the configured retry logic.
+- These failures are **infrastructure / API reliability issues**, not necessarily modeling errors.
+- Any interpretation of model performance from this run must be viewed in light of these repeated 500 errors.
 
 ---
 
@@ -54,34 +63,6 @@
 
 ---
 
-## Extrapolation to Full Dataset (120 Puzzles)
-
-### Assumptions
-
-1. The first 10 puzzles are representative of the full dataset (unverified)
-2. Performance scales linearly (unlikely to hold perfectly)
-3. No API rate limiting or quota issues at scale
-4. No memory/resource exhaustion over extended runs
-
-### Projected Metrics
-
-| Metric | 10 Puzzles (Actual) | 120 Puzzles (Projected) |
-|--------|---------------------|-------------------------|
-| Total Score | 3.67 | **44.0** |
-| Accuracy | 36.67% | **36.67%** |
-| Total Time | 7,217 sec | **86,604 sec** |
-| Total Time | 2.0 hours | **24.1 hours** |
-
-### Projected Outcomes
-
-| Outcome | Count (of 120) |
-|---------|----------------|
-| PASS | ~36 puzzles |
-| PARTIAL | ~8 puzzles |
-| FAIL | ~76 puzzles |
-
----
-
 ## Issues Observed During Test
 
 ### API Errors
@@ -103,52 +84,4 @@
 
 ---
 
-## Risk Factors for Full Run
-
-### 1. Time Risk
-A 24-hour continuous run is vulnerable to:
-- Network interruptions
-- API quota exhaustion
-- Machine sleep/hibernation
-- Power or connectivity loss
-
-### 2. API Reliability
-At 12x the current API call volume:
-- Higher chance of rate limiting
-- More exposure to transient 500 errors
-- Possible quota limits on Gemini API
-
-### 3. Cost Considerations
-Gemini 3 Pro Preview API costs are not documented here. A 24-hour run with continuous LLM calls will incur significant API costs.
-
-### 4. Representativeness
-The first 10 puzzles may not be representative:
-- Could be easier (inflating projected accuracy)
-- Could be harder (deflating projected accuracy)
-- Dataset ordering is unknown
-
----
-
-## Recommendations Before Full Run
-
-1. **Verify API quota** - Ensure sufficient Gemini API quota for ~12x current usage
-2. **Implement checkpointing** - Save progress to resume after interruption
-3. **Monitor costs** - Track API spend during run
-4. **Consider batching** - Run in batches of 20-30 to manage risk
-5. **Random sampling** - Consider random 30-puzzle sample first for better estimate
-
----
-
-## Summary Table
-
-| Scenario | Puzzles | Projected Accuracy | Projected Time |
-|----------|---------|-------------------|----------------|
-| Test Run | 10 | 36.67% | 2 hours |
-| Quarter Set | 30 | 36.67% | 6 hours |
-| Half Set | 60 | 36.67% | 12 hours |
-| Full Set | 120 | 36.67% | 24 hours |
-
----
-
-*These projections assume linear scaling and representative sampling.*
-*Actual results may vary significantly.*
+*This document reports only observed behavior from a single 10-puzzle run and does not attempt to project results to the full dataset.*
