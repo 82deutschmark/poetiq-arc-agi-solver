@@ -2,12 +2,11 @@ from arc_agi.prompts import FEEDBACK_PROMPT, SOLVER_PROMPT_1, SOLVER_PROMPT_2, S
 from arc_agi.types import ExpertConfig
 import os
 
-# To run Poetiq(Gemini-3-a):
-NUM_EXPERTS = 1
-# To run Poetiq(Gemini-3-b):
-# NUM_EXPERTS = 2
-# To run Poetiq(Gemini-3-c):
-# NUM_EXPERTS = 8
+# Poetiq expert configurations:
+# - Gemini-3-a: NUM_EXPERTS = 1 (fastest, lowest cost)
+# - Gemini-3-b: NUM_EXPERTS = 2 (default, good balance)
+# - Gemini-3-c: NUM_EXPERTS = 8 (best accuracy, slowest)
+NUM_EXPERTS = 2  # Default to Gemini-3-b config
 
 # Model selection - use OpenRouter to avoid Gemini direct API rate limits
 # Set USE_OPENROUTER=true in .env to route through OpenRouter
