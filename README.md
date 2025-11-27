@@ -35,9 +35,15 @@ Full analysis is available in our launch post, **[Traversing the Frontier of Sup
 2. Create a .env file in the root directory. You must include keys for the models you intend to run.
 
     ```bash
+    OPENROUTER_API_KEY=sk-or-...
+    # Optional direct fallbacks
     GEMINI_API_KEY=...
     OPENAI_API_KEY=...
+    USE_OPENROUTER=true
     ```
+
+    - `OPENROUTER_API_KEY` + `USE_OPENROUTER=true` is the recommended path (avoids direct Gemini quota issues).
+    - Leave `USE_OPENROUTER` unset/false only if you explicitly want to call Google's API directly.
 
 3. Modify the constants in main.py to set the problem set, number of problems, etc. Then run the script:
 
