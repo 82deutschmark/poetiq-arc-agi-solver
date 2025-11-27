@@ -51,8 +51,11 @@ props: dict[Models, dict] = {
 }
 
 
+# Default limiter for unknown models (conservative 1 req/sec)
+default_limiter = Limiter(1.0)
+
 async def llm(
-    model: Models,
+    model: str,
     message: str,
     temperature,
     request_timeout: int | None,
@@ -60,14 +63,21 @@ async def llm(
     max_remaining_timeouts: int | None,
     problem_id: str | None = None,
     retries: int = RETRIES,
+    **kwargs,  # Accept extra parameters like reasoning_effort
 ) -> tuple[str, float, float | None, int | None]:
     attempt = 1
     while attempt <= retries:
-        await limiters[model].wait()
+        # Use specific limiter or default
+        limiter = limiters.get(model, default_limiter)
+        await limiter.wait()
 
         current_request_timeout = request_timeout or 15 * 60
         if max_remaining_time is not None:
             current_request_timeout = min(current_request_timeout, max_remaining_time)
+
+        # Merge static props with dynamic kwargs
+        model_props = props.get(model, {}).copy()
+        model_props.update(kwargs)
 
         start_time = asyncio.get_event_loop().time()
         try:
@@ -77,7 +87,7 @@ async def llm(
                 temperature=temperature,
                 timeout=current_request_timeout,
                 num_retries=0,
-                **props[model],
+                **model_props,
             )
             end_time = asyncio.get_event_loop().time()
             duration = end_time - start_time
